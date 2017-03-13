@@ -14,38 +14,44 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
  * @author fabri_000
  */
 public class ClienteFrame extends javax.swing.JFrame {
-        private Socket socket;
-        private ChatMessage message;
-        private ClienteService service;
+
+    private Socket socket;
+    private ChatMessage message;
+    private ClienteService service;
+
     /**
      * Creates new form ClienteFrame
      */
     public ClienteFrame() {
         initComponents();
     }
-    private class ListenerSocket implements Runnable{
+
+    private class ListenerSocket implements Runnable {
+
         private ObjectInputStream input;
-        
-        public ListenerSocket(Socket socket){
+
+        public ListenerSocket(Socket socket) {
             try {
                 this.input = new ObjectInputStream(socket.getInputStream());
             } catch (IOException ex) {
                 Logger.getLogger(ClienteFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
         @Override
         public void run() {
             ChatMessage message = null;
             try {
-                while((message = (ChatMessage) input.readObject()) != null){
-                  Action action = message.getAction();
-                 switch (action) {
+                while ((message = (ChatMessage) input.readObject()) != null) {
+                    Action action = message.getAction();
+                    switch (action) {
                         case CONNECT:
                             connect(message);
                             break;
@@ -53,7 +59,7 @@ public class ClienteFrame extends javax.swing.JFrame {
                             disconnect(message);
                             break;
                         case SEND_ONE:
-                            sendOne(message);
+                            receive(message);
                             break;
                         case USERS_ONLINE:
                             refreshUsers(message);
@@ -68,20 +74,30 @@ public class ClienteFrame extends javax.swing.JFrame {
                 Logger.getLogger(ClienteFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+
     }
+
     private void connect(ChatMessage chatMessage) {
-    
+        if (message.getText().equals("NO")) {
+            this.txtName.setText("");
+            JOptionPane.showMessageDialog(this,"Conexão não realizada");
+            return;
+        }
+        this.cxTexto.append(message.getName() + "\n");
     }
+
     private void disconnect(ChatMessage chatMessage) {
-    
+
     }
-    private void sendOne(ChatMessage chatMessage) {
-    
+
+    private void receive(ChatMessage chatMessage) {
+        this.cxTexto.append(message.getName() + "\n");
     }
+
     private void refreshUsers(ChatMessage chatMessage) {
-    
+
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -268,16 +284,16 @@ public class ClienteFrame extends javax.swing.JFrame {
 
     private void btnConectarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConectarActionPerformed
         String name = this.txtName.getText();
-        
+
         if (!name.isEmpty()) {
             this.message = new ChatMessage();
             this.message.setAction(Action.CONNECT);
             this.message.setName(name);
-            
+
             if (this.socket == null) {
                 this.service = new ClienteService();
                 this.socket = this.service.connect();
-                
+
                 new Thread(new ListenerSocket(this.socket)).start();
             }
             this.service.send(message);
@@ -296,40 +312,6 @@ public class ClienteFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnSairActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ClienteFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ClienteFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ClienteFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ClienteFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ClienteFrame().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAtualizar;
