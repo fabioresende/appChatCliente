@@ -10,6 +10,7 @@ import com.projeto.app.bean.ChatMessage.Action;
 import com.projeto.app.service.ClienteService;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,7 +45,22 @@ public class ClienteFrame extends javax.swing.JFrame {
             try {
                 while((message = (ChatMessage) input.readObject()) != null){
                   Action action = message.getAction();
-                  
+                 switch (action) {
+                        case CONNECT:
+                            connect(message);
+                            break;
+                        case DISCONNECT:
+                            disconnect(message);
+                            break;
+                        case SEND_ONE:
+                            sendOne(message);
+                            break;
+                        case USERS_ONLINE:
+                            refreshUsers(message);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             } catch (IOException ex) {
                 Logger.getLogger(ClienteFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -53,6 +69,18 @@ public class ClienteFrame extends javax.swing.JFrame {
             }
         }
         
+    }
+    private void connect(ChatMessage chatMessage) {
+    
+    }
+    private void disconnect(ChatMessage chatMessage) {
+    
+    }
+    private void sendOne(ChatMessage chatMessage) {
+    
+    }
+    private void refreshUsers(ChatMessage chatMessage) {
+    
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -239,8 +267,21 @@ public class ClienteFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnConectarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConectarActionPerformed
-    
+        String name = this.txtName.getText();
         
+        if (!name.isEmpty()) {
+            this.message = new ChatMessage();
+            this.message.setAction(Action.CONNECT);
+            this.message.setName(name);
+            
+            if (this.socket == null) {
+                this.service = new ClienteService();
+                this.socket = this.service.connect();
+                
+                new Thread(new ListenerSocket(this.socket)).start();
+            }
+            this.service.send(message);
+        }
     }//GEN-LAST:event_btnConectarActionPerformed
 
     private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnviarActionPerformed
